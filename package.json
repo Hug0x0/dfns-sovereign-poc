@@ -1,7 +1,7 @@
 {
   "name": "dfns-sovereign-poc",
   "version": "0.1.0",
-  "description": "POC SaaS Orchestration de Transferts Souverain via DFNS",
+  "description": "SaaS POC for sovereign transfer orchestration via DFNS",
   "main": "dist/index.js",
   "scripts": {
     "build": "tsc",

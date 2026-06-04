@@ -113,7 +113,7 @@ export async function runTransferPipeline(
     // TODO: integrate Off Ramp Europe (USDC/EURC → fiat via Bitvavo / Mt Pelerin)
     logger.info('TODO: integrate Off Ramp (Bitvavo / Mt Pelerin)')
 
-    // TODO: integrate Reporting & Réconciliation (Scorechain / Chainalysis hooks)
+    // TODO: integrate reporting and reconciliation (Scorechain / Chainalysis hooks)
     logger.info('TODO: integrate Reporting (Scorechain / Chainalysis)')
 
     const success = result.status === 'Confirmed'

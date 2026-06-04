@@ -1,6 +1,6 @@
 # DFNS Sovereign Transfer POC
 
-POC Node.js / TypeScript pour l'orchestration de transferts souverains de stablecoins (USDC / EURC) via les APIs **DFNS** et le swap **Uniswap** integre.
+Node.js / TypeScript POC for orchestrating sovereign stablecoin transfers (USDC / EURC) through the **DFNS** APIs and integrated **Uniswap** swaps.
 
 ---
 
@@ -10,7 +10,7 @@ POC Node.js / TypeScript pour l'orchestration de transferts souverains de stable
 flowchart LR
     CLIENT(["Client<br/>curl / Frontend"])
 
-    subgraph API["API REST Express :3000"]
+    subgraph API["Express REST API :3000"]
         direction TB
         HEALTH["/health"]
         R_WALLETS["/wallets"]
@@ -22,13 +22,13 @@ flowchart LR
         R_PIPELINE["/pipeline/run"]
     end
 
-    subgraph ORCHESTRATOR["Pipeline d'orchestration"]
+    subgraph ORCHESTRATOR["Orchestration Pipeline"]
         direction TB
-        S1["1 - Verification balance"]
+        S1["1 - Balance check"]
         S2["2 - On Ramp"]
-        S3["3 - Swap Uniswap"]
-        S4["4 - Transfert ERC-20"]
-        S5["5 - Polling confirmation"]
+        S3["3 - Uniswap swap"]
+        S4["4 - ERC-20 transfer"]
+        S5["5 - Confirmation polling"]
         S6["6 - Off Ramp"]
         S7["7 - Reporting AML"]
 
@@ -40,14 +40,14 @@ flowchart LR
         S6 --> S7
     end
 
-    subgraph DFNS["Plateforme DFNS (SDK v0.8)"]
+    subgraph DFNS["DFNS Platform (SDK v0.8)"]
         direction TB
         AUTH["Service Account<br/>AsymmetricKeySigner"]
-        WALLETS["Wallets Souverains"]
-        TRANSFERS["Transferts ERC-20"]
+        WALLETS["Sovereign Wallets"]
+        TRANSFERS["ERC-20 Transfers"]
         SWAPS["Swaps Uniswap<br/>Classic / X"]
-        POLICIES["Policies<br/>Limites & Approbations"]
-        WEBHOOKS["Webhooks<br/>Events temps reel"]
+        POLICIES["Policies<br/>Limits & Approvals"]
+        WEBHOOKS["Webhooks<br/>Real-time events"]
         IAM["IAM<br/>Permissions"]
     end
 
@@ -92,41 +92,41 @@ flowchart LR
     style REPORT stroke-dasharray: 5 5,color:#999
 ```
 
-## Structure du projet
+## Project Structure
 
 ```
 dfns-sovereign-poc/
 ├── src/
 │   ├── dfns/
 │   │   ├── client.ts              # DfnsApiClient singleton + AsymmetricKeySigner
-│   │   ├── retry.ts               # Retry avec backoff exponentiel (max 3)
-│   │   └── logger.ts              # Logger structure pino
+│   │   ├── retry.ts               # Retry with exponential backoff (max 3)
+│   │   └── logger.ts              # Structured pino logger
 │   ├── wallets/
 │   │   └── walletService.ts       # CRUD wallets, assets, history, multi-chain
 │   ├── transfers/
-│   │   └── transferService.ts     # Transferts ERC-20, polling, timeout
+│   │   └── transferService.ts     # ERC-20 transfers, polling, timeout
 │   ├── swaps/
 │   │   └── swapService.ts         # Quotes & swaps Uniswap via DFNS SDK
 │   ├── policies/
-│   │   └── policyService.ts       # Regles de gouvernance, approbations
+│   │   └── policyService.ts       # Governance rules, approvals
 │   ├── webhooks/
-│   │   └── webhookService.ts      # Enregistrement webhooks, reception events
+│   │   └── webhookService.ts      # Webhook registration, event receiving
 │   ├── iam/
 │   │   └── permissionService.ts   # Permissions, assignments, service accounts
 │   ├── orchestrator/
-│   │   └── orchestrationPipeline.ts  # Pipeline complet de transfert
+│   │   └── orchestrationPipeline.ts  # Complete transfer pipeline
 │   ├── api/
 │   │   ├── routes.ts              # 24 endpoints Express
-│   │   └── server.ts              # Configuration serveur Express
+│   │   └── server.ts              # Express server configuration
 │   ├── config/
-│   │   └── tokens.ts              # Adresses contrats stablecoins Sepolia
+│   │   └── tokens.ts              # Sepolia stablecoin contract addresses
 │   ├── __tests__/
 │   │   ├── walletService.test.ts
 │   │   ├── transferService.test.ts
 │   │   └── orchestrationPipeline.test.ts
 │   └── index.ts                   # Entrypoint
 ├── scripts/
-│   └── accept-agreements.ts       # Acceptation T&C Uniswap
+│   └── accept-agreements.ts       # Uniswap T&C acceptance
 ├── .env.example
 ├── .gitignore
 ├── package.json
@@ -137,13 +137,13 @@ dfns-sovereign-poc/
 
 ---
 
-## Prerequis
+## Prerequisites
 
 - **Node.js 20+**
-- **Compte DFNS** avec un Service Account configure
-  - Guide : https://docs.dfns.co/guides/developers/creating-a-service-account
-- **Sepolia ETH** pour les frais de gas : https://sepoliafaucet.com
-- **USDC testnet** (Sepolia) : https://faucet.circle.com
+- **DFNS account** with a configured Service Account
+  - Guide: https://docs.dfns.co/guides/developers/creating-a-service-account
+- **Sepolia ETH** for gas fees: https://sepoliafaucet.com
+- **USDC testnet** (Sepolia): https://faucet.circle.com
 
 ---
 
@@ -159,21 +159,21 @@ npm install
 
 ## Configuration
 
-### 1. Generer une paire de cles RSA
+### 1. Generate an RSA key pair
 
 ```bash
 openssl genrsa -out service-account.pem 2048
 openssl pkey -in service-account.pem -pubout -out service-account.public.pem
 ```
 
-### 2. Creer le Service Account dans DFNS
+### 2. Create the Service Account in DFNS
 
-1. Dashboard DFNS : **Settings > Developers > Service Accounts > New Service Account**
-2. Coller le contenu de `service-account.public.pem`
-3. Confirmer avec passkey
-4. **Copier immediatement** le Token (affiche une seule fois) et le Credential ID
+1. DFNS Dashboard: **Settings > Developers > Service Accounts > New Service Account**
+2. Paste the contents of `service-account.public.pem`
+3. Confirm with passkey
+4. **Copy the Token immediately** (shown only once) and the Credential ID
 
-### 3. Remplir le fichier `.env`
+### 3. Fill in the `.env` file
 
 ```bash
 cp .env.example .env
@@ -181,19 +181,19 @@ cp .env.example .env
 
 | Variable | Source | Description |
 |----------|--------|-------------|
-| `DFNS_AUTH_TOKEN` | Dashboard (etape 2) | JWT du Service Account |
-| `DFNS_CRED_ID` | Dashboard (etape 2) | Credential ID |
-| `DFNS_PRIVATE_KEY` | `service-account.pem` | Cle privee PEM (remplacer `\n` par `\\n`) |
-| `DFNS_BASE_URL` | Fixe | `https://api.dfns.io` |
-| `PORT` | Optionnel | Port du serveur (defaut: `3000`) |
+| `DFNS_AUTH_TOKEN` | Dashboard (step 2) | Service Account JWT |
+| `DFNS_CRED_ID` | Dashboard (step 2) | Credential ID |
+| `DFNS_PRIVATE_KEY` | `service-account.pem` | PEM private key (replace `\n` with `\\n`) |
+| `DFNS_BASE_URL` | Fixed | `https://api.dfns.io` |
+| `PORT` | Optional | Server port (default: `3000`) |
 
-Formater la cle privee pour le `.env` :
+Format the private key for `.env`:
 
 ```bash
 awk 'NF {sub(/\r/, ""); printf "%s\\n",$0;}' service-account.pem
 ```
 
-### 4. Accepter les Terms & Conditions Uniswap
+### 4. Accept the Uniswap Terms & Conditions
 
 ```bash
 npx tsx scripts/accept-agreements.ts
@@ -201,106 +201,106 @@ npx tsx scripts/accept-agreements.ts
 
 ---
 
-## Demarrage
+## Startup
 
 ```bash
 npm run dev
 ```
 
-Le serveur demarre sur `http://localhost:3000`.
+The server starts on `http://localhost:3000`.
 
 ---
 
 ## Modules
 
-| # | Module | Fichier | Description |
+| # | Module | File | Description |
 |---|--------|---------|-------------|
-| 1 | Client DFNS | `src/dfns/client.ts` | Singleton `DfnsApiClient` avec `AsymmetricKeySigner` (SDK v0.8) |
-| 2 | Wallets | `src/wallets/walletService.ts` | Creation, listing, assets, historique, multi-chain |
-| 3 | Transferts | `src/transfers/transferService.ts` | Transferts ERC-20 (USDC/EURC), polling avec timeout |
-| 4 | Swaps | `src/swaps/swapService.ts` | Quotes et swaps via Uniswap (UniswapClassic / UniswapX) |
-| 5 | Policies | `src/policies/policyService.ts` | Limites de transfert, approbations, gouvernance |
-| 6 | Webhooks | `src/webhooks/webhookService.ts` | Enregistrement webhooks, reception events temps reel |
+| 1 | DFNS Client | `src/dfns/client.ts` | `DfnsApiClient` singleton with `AsymmetricKeySigner` (SDK v0.8) |
+| 2 | Wallets | `src/wallets/walletService.ts` | Creation, listing, assets, history, multi-chain |
+| 3 | Transfers | `src/transfers/transferService.ts` | ERC-20 transfers (USDC/EURC), polling with timeout |
+| 4 | Swaps | `src/swaps/swapService.ts` | Quotes and swaps via Uniswap (UniswapClassic / UniswapX) |
+| 5 | Policies | `src/policies/policyService.ts` | Transfer limits, approvals, governance |
+| 6 | Webhooks | `src/webhooks/webhookService.ts` | Webhook registration, real-time event receiving |
 | 7 | IAM | `src/iam/permissionService.ts` | Permissions, assignments, service accounts |
-| 8 | Orchestrateur | `src/orchestrator/orchestrationPipeline.ts` | Pipeline : balance -> swap -> transfert -> confirmation |
+| 8 | Orchestrator | `src/orchestrator/orchestrationPipeline.ts` | Pipeline: balance -> swap -> transfer -> confirmation |
 | 9 | API REST | `src/api/routes.ts` | 24 endpoints Express |
 
 ---
 
-## Endpoints API
+## API Endpoints
 
 ### Wallets
 
-| Methode | Route | Description |
+| Method | Route | Description |
 |---------|-------|-------------|
-| `POST` | `/wallets` | Creer un wallet souverain |
-| `GET` | `/wallets` | Lister les wallets |
-| `GET` | `/wallets/:id/assets` | Balances du wallet |
-| `GET` | `/wallets/:id/history` | Historique du wallet |
+| `POST` | `/wallets` | Create a sovereign wallet |
+| `GET` | `/wallets` | List wallets |
+| `GET` | `/wallets/:id/assets` | Wallet balances |
+| `GET` | `/wallets/:id/history` | Wallet history |
 
-### Transferts
+### Transfers
 
-| Methode | Route | Description |
+| Method | Route | Description |
 |---------|-------|-------------|
-| `POST` | `/transfers` | Declencher un transfert ERC-20 |
-| `GET` | `/transfers/:walletId/:transferId` | Statut d'un transfert |
+| `POST` | `/transfers` | Trigger an ERC-20 transfer |
+| `GET` | `/transfers/:walletId/:transferId` | Transfer status |
 
 ### Swaps
 
-| Methode | Route | Description |
+| Method | Route | Description |
 |---------|-------|-------------|
-| `POST` | `/swaps/quote` | Obtenir un quote swap (Uniswap) |
-| `POST` | `/swaps` | Executer un swap |
-| `GET` | `/swaps/:id` | Statut d'un swap |
+| `POST` | `/swaps/quote` | Get a swap quote (Uniswap) |
+| `POST` | `/swaps` | Execute a swap |
+| `GET` | `/swaps/:id` | Swap status |
 
 ### Policies
 
-| Methode | Route | Description |
+| Method | Route | Description |
 |---------|-------|-------------|
-| `GET` | `/policies` | Lister les policies actives |
-| `POST` | `/policies/transfer-limit` | Creer une policy de limite de transfert |
-| `POST` | `/policies/approval` | Creer une policy d'approbation |
-| `GET` | `/policies/approvals/pending` | Lister les approbations en attente |
-| `PUT` | `/policies/approvals/:id/approve` | Approuver une action |
+| `GET` | `/policies` | List active policies |
+| `POST` | `/policies/transfer-limit` | Create a transfer limit policy |
+| `POST` | `/policies/approval` | Create an approval policy |
+| `GET` | `/policies/approvals/pending` | List pending approvals |
+| `PUT` | `/policies/approvals/:id/approve` | Approve an action |
 
 ### Webhooks
 
-| Methode | Route | Description |
+| Method | Route | Description |
 |---------|-------|-------------|
-| `POST` | `/webhooks` | Enregistrer un webhook DFNS |
-| `GET` | `/webhooks` | Lister les webhooks |
-| `GET` | `/webhooks/:id/events` | Events d'un webhook |
-| `POST` | `/webhook/receiver` | Recepteur d'events DFNS |
-| `GET` | `/webhook/events` | Events recus localement |
+| `POST` | `/webhooks` | Register a DFNS webhook |
+| `GET` | `/webhooks` | List webhooks |
+| `GET` | `/webhooks/:id/events` | Webhook events |
+| `POST` | `/webhook/receiver` | DFNS event receiver |
+| `GET` | `/webhook/events` | Locally received events |
 
 ### IAM / Permissions
 
-| Methode | Route | Description |
+| Method | Route | Description |
 |---------|-------|-------------|
-| `POST` | `/permissions` | Creer la permission orchestrateur |
-| `POST` | `/permissions/:id/assign` | Assigner une permission a un utilisateur |
-| `POST` | `/service-accounts` | Creer un service account |
+| `POST` | `/permissions` | Create the orchestrator permission |
+| `POST` | `/permissions/:id/assign` | Assign a permission to a user |
+| `POST` | `/service-accounts` | Create a service account |
 
 ### Orchestration
 
-| Methode | Route | Description |
+| Method | Route | Description |
 |---------|-------|-------------|
-| `POST` | `/pipeline/run` | Lancer le pipeline complet |
+| `POST` | `/pipeline/run` | Run the complete pipeline |
 | `GET` | `/health` | Health check |
 
 ---
 
-## Exemples d'utilisation
+## Usage Examples
 
-### Creer un wallet souverain
+### Create a sovereign wallet
 
 ```bash
 curl -X POST http://localhost:3000/wallets \
   -H "Content-Type: application/json" \
-  -d '{"name": "mon-wallet"}'
+  -d '{"name": "my-wallet"}'
 ```
 
-### Transfert USDC (1 USDC = 1000000 unites)
+### USDC transfer (1 USDC = 1,000,000 units)
 
 ```bash
 curl -X POST http://localhost:3000/transfers \
@@ -308,15 +308,15 @@ curl -X POST http://localhost:3000/transfers \
   -d '{
     "walletId": "wa-xxxxx-xxxxx-xxxxxxxxxxxxxxxx",
     "contract": "0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238",
-    "to": "0xDestinataire...",
+    "to": "0xRecipient...",
     "amount": "1000000"
   }'
 ```
 
-### Swap ETH vers USDC (0.005 ETH)
+### Swap ETH to USDC (0.005 ETH)
 
 ```bash
-# 1. Obtenir un quote
+# 1. Get a quote
 curl -X POST http://localhost:3000/swaps/quote \
   -H "Content-Type: application/json" \
   -d '{
@@ -326,7 +326,7 @@ curl -X POST http://localhost:3000/swaps/quote \
     "provider": "UniswapClassic"
   }'
 
-# 2. Executer le swap (avec les donnees du quote)
+# 2. Execute the swap (with quote data)
 curl -X POST http://localhost:3000/swaps \
   -H "Content-Type: application/json" \
   -d '{
@@ -339,27 +339,27 @@ curl -X POST http://localhost:3000/swaps \
   }'
 ```
 
-### Pipeline complet (transfert simple)
+### Complete pipeline (simple transfer)
 
 ```bash
 curl -X POST http://localhost:3000/pipeline/run \
   -H "Content-Type: application/json" \
   -d '{
     "senderWalletId": "wa-xxxxx-xxxxx-xxxxxxxxxxxxxxxx",
-    "recipientAddress": "0xDestinataire...",
+    "recipientAddress": "0xRecipient...",
     "amount": "1000000",
     "tokenContract": "0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238"
   }'
 ```
 
-### Pipeline avec swap (EURC vers USDC puis transfert)
+### Pipeline with swap (EURC to USDC, then transfer)
 
 ```bash
 curl -X POST http://localhost:3000/pipeline/run \
   -H "Content-Type: application/json" \
   -d '{
     "senderWalletId": "wa-xxxxx-xxxxx-xxxxxxxxxxxxxxxx",
-    "recipientAddress": "0xDestinataire...",
+    "recipientAddress": "0xRecipient...",
     "amount": "1000000",
     "tokenContract": "0x08210F9170F89Ab7658F0B5E3fF39b0E03C594D4",
     "requireSwap": true,
@@ -367,13 +367,13 @@ curl -X POST http://localhost:3000/pipeline/run \
   }'
 ```
 
-### Creer une policy de limite de transfert
+### Create a transfer limit policy
 
 ```bash
 curl -X POST http://localhost:3000/policies/transfer-limit \
   -H "Content-Type: application/json" \
   -d '{
-    "name": "Limite 10k USD",
+    "name": "10k USD Limit",
     "limitUsd": 10000,
     "approverUserIds": ["us-xxxxx-xxxxx-xxxxxxxxxxxxxxxx"]
   }'
@@ -384,35 +384,35 @@ curl -X POST http://localhost:3000/policies/transfer-limit \
 ## Tests
 
 ```bash
-# Lancer les tests
+# Run tests
 npm test
 
-# Mode watch
+# Watch mode
 npm run test:watch
 
-# Verification TypeScript (strict)
+# TypeScript verification (strict)
 npm run typecheck
 ```
 
-3 suites de tests, 15 tests unitaires couvrant les wallets, transferts et le pipeline d'orchestration.
+3 test suites, 15 unit tests covering wallets, transfers, and the orchestration pipeline.
 
 ---
 
-## Robustesse
+## Robustness
 
-| Mecanisme | Detail |
+| Mechanism | Detail |
 |-----------|--------|
-| Retry | Backoff exponentiel (500ms, 1s, 2s) sur tous les appels DFNS |
-| Timeout | 5 minutes max pour le polling des transferts et swaps |
-| Logging | Structure via `pino` avec niveaux `info`, `warn`, `error` |
-| Typage | TypeScript strict, tous les retours DFNS types via le SDK |
-| Signature | `AsymmetricKeySigner` signe automatiquement les requetes mutantes |
+| Retry | Exponential backoff (500ms, 1s, 2s) on all DFNS calls |
+| Timeout | 5 minutes max for transfer and swap polling |
+| Logging | Structured via `pino` with `info`, `warn`, and `error` levels |
+| Typing | Strict TypeScript, all DFNS responses typed through the SDK |
+| Signature | `AsymmetricKeySigner` automatically signs mutating requests |
 
 ---
 
-## Stack technique
+## Technical Stack
 
-| Composant | Technologie |
+| Component | Technology |
 |-----------|-------------|
 | Runtime | Node.js 20+ / TypeScript strict |
 | SDK | `@dfns/sdk` v0.8 + `@dfns/sdk-keysigner` v0.8 |
@@ -425,17 +425,17 @@ npm run typecheck
 
 ---
 
-## Integrations futures (TODO)
+## Future Integrations (TODO)
 
-| Etape | Service | Statut |
+| Step | Service | Status |
 |-------|---------|--------|
-| On Ramp (fiat vers crypto) | Mt Pelerin / Ramp.Network / Sardine | A integrer |
-| Off Ramp (crypto vers fiat) | DFNS Payouts (Borderless) | API disponible |
-| Reporting AML/KYT | Chainalysis / Scorechain | A integrer |
-| Travel Rule | Notabene | A integrer |
+| On Ramp (fiat to crypto) | Mt Pelerin / Ramp.Network / Sardine | To integrate |
+| Off Ramp (crypto to fiat) | DFNS Payouts (Borderless) | API available |
+| AML/KYT Reporting | Chainalysis / Scorechain | To integrate |
+| Travel Rule | Notabene | To integrate |
 
 ---
 
-## Reseau
+## Network
 
-Ce POC utilise exclusivement **Ethereum Sepolia** (testnet). Aucune cle mainnet n'est utilisee.
+This POC exclusively uses **Ethereum Sepolia** (testnet). No mainnet key is used.
