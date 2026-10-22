@@ -15,8 +15,8 @@
     "node": ">=20.0.0"
   },
   "dependencies": {
-    "@dfns/sdk": "^0.8.12",
-    "@dfns/sdk-keysigner": "^0.8.12",
+    "@dfns/sdk": "0.8.12",
+    "@dfns/sdk-keysigner": "0.8.12",
     "dotenv": "^16.4.7",
     "express": "^4.21.2",
     "pino": "^9.6.0",
@@ -27,6 +27,11 @@
     "@types/node": "^22.13.0",
     "tsx": "^4.19.0",
     "typescript": "^5.7.0",
-    "vitest": "^3.0.0"
+    "vitest": "5.0.5"
+  },
+  "overrides": {
+    "express": {
+      "qs": "^6.16.1"
+    }
   }
 }
